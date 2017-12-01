@@ -189,6 +189,12 @@ namespace pyrochild.effects.common
             }
         }
 
+        public Image CanvasBackgroundImage
+        {
+            get => canvas.BackgroundImage;
+            set => canvas.BackgroundImage = value;
+        }
+
         public void InvalidateCanvas()
         {
             canvas.Invalidate();
