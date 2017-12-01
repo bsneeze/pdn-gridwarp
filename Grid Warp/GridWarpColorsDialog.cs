@@ -20,7 +20,7 @@ namespace pyrochild.effects.gridwarp
                     using (Surface sfc = new Surface(clipboardPreview.Size))
                     {
                         clipboard = Surface.CopyFromBitmap((Bitmap)Clipboard.GetImage());
-                        sfc.FitSurface(ResamplingAlgorithm.SuperSampling, clipboard);
+                        sfc.FitSurface(ResamplingAlgorithm.Fant, clipboard);
                         clipboardPreview.Image = new Bitmap(sfc.CreateAliasedBitmap());
                         fromClipboard.Enabled = true;
                     }
