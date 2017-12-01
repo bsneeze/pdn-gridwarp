@@ -362,8 +362,9 @@ namespace pyrochild.effects.common
 
         private DialogResult ShowColorPicker(Control owner, Point location, bool alpha, out ColorBgra color)
         {
-            using (ColorDialog cd = new ColorDialog(alpha))
+            using (ColorDialog cd = new ColorDialog())
             {
+                cd.HasAlpha = alpha;
                 cd.Color = ColorBgra.FromColor(owner.BackColor);
 
                 DialogResult result = cd.ShowDialog(owner);
