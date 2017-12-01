@@ -476,16 +476,27 @@ namespace pyrochild.effects.gridwarp
                 if (grid != null)
                     grid.Abort();
 
-                FileStream fs = new FileStream(ofd.FileName, FileMode.Open);
+                try
+                {
+                    FileStream fs = new FileStream(ofd.FileName, FileMode.Open);
 
-                DisplacementGrid g = new DisplacementGrid(fs, mesh);
-                GridWidth = g.Width;
-                GridHeight = g.Height;
-                grid = g;
+                    DisplacementGrid g = new DisplacementGrid(fs, mesh);
+                    GridWidth = g.Width;
+                    GridHeight = g.Height;
+                    grid = g;
 
-                InitializeRenderer();
+                    InitializeRenderer();
 
-                grid.UpdateMesh();
+                    grid.UpdateMesh();
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show(this,
+                        "Error loading warp grid:\n\n" + exc.ToString(),
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -496,8 +507,19 @@ namespace pyrochild.effects.gridwarp
             sfd.FileName = "Grid Warp.warpgrid";
             if (sfd.ShowDialog(this) == DialogResult.OK)
             {
-                FileStream fs = new FileStream(sfd.FileName, FileMode.Create);
-                grid.Save(fs);
+                try
+                {
+                    FileStream fs = new FileStream(sfd.FileName, FileMode.Create);
+                    grid.Save(fs);
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show(this,
+                        "Error saving warp grid:\n\n" + exc.ToString(),
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
             }
         }
 
