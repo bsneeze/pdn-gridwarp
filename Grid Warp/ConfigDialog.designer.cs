@@ -25,6 +25,7 @@ namespace pyrochild.effects.gridwarp
                     components.Dispose();
                 //if (historystack != null)
                 //    historystack.Dispose();
+                gridPen?.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -41,6 +42,7 @@ namespace pyrochild.effects.gridwarp
             this.toolPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.load = new System.Windows.Forms.Button();
             this.save = new System.Windows.Forms.Button();
+            this.colors = new Button();
             this.visibility = new System.Windows.Forms.Button();
             this.settingStrip = new System.Windows.Forms.ToolStrip();
             this.gridSizeSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -73,6 +75,7 @@ namespace pyrochild.effects.gridwarp
             this.toolPanel.Controls.Add(this.load);
             this.toolPanel.Controls.Add(this.save);
             this.toolPanel.Controls.Add(this.visibility);
+            this.toolPanel.Controls.Add(this.colors);
             this.toolPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.toolPanel.Location = new System.Drawing.Point(0, 25);
             this.toolPanel.Name = "toolPanel";
@@ -108,6 +111,16 @@ namespace pyrochild.effects.gridwarp
             this.visibility.TabIndex = 6;
             this.visibility.UseVisualStyleBackColor = true;
             this.visibility.Click += new System.EventHandler(this.visbility_Click);
+            //
+            // colors
+            //
+            this.colors.Location = new System.Drawing.Point(2, 94);
+            this.colors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 0);
+            this.colors.Name = "colors";
+            this.colors.Size = new System.Drawing.Size(26, 26);
+            this.colors.TabIndex = 7;
+            this.colors.UseVisualStyleBackColor = true;
+            this.colors.Click += new System.EventHandler(this.colors_Click);
             // 
             // settingStrip
             // 
@@ -355,6 +368,7 @@ namespace pyrochild.effects.gridwarp
         private CanvasPanel canvas;
         private Button load;
         private Button save;
+        private Button colors;
         private ToolTip tooltip;
         private ToolStripButton undo;
         private ToolStripButton redo;

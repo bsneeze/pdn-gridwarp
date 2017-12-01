@@ -17,9 +17,9 @@ namespace pyrochild.effects.gridwarp
         private const int minGridSize = 1;
         private const int maxGridSize = 100;
         private int[] gridSizes =
-            { 
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
-                11, 12, 13, 14, 15, 20, 25, 30, 
+            {
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                11, 12, 13, 14, 15, 20, 25, 30,
                 35, 40, 45, 50, 60, 70, 80, 90, 100
             };
         private DisplacementGrid grid;
@@ -51,7 +51,7 @@ namespace pyrochild.effects.gridwarp
                 float y = mouselocation.Y;
 
                 invalidrect = grid.SetPoint(i, j, x / xspacing - i, y / yspacing - j);
-                
+
                 invalidrect.Inflate(10, 10);
             }
 
@@ -104,7 +104,7 @@ namespace pyrochild.effects.gridwarp
                         {
                             line[x - linestart] = new PointF(x, (float)(si.Interpolate(x / xspacing) * yspacing + 1));
                         }
-                        e.Graphics.DrawLines(Pens.Black, line);
+                        e.Graphics.DrawLines(gridPen, line);
                     }
                 }
 
@@ -134,7 +134,7 @@ namespace pyrochild.effects.gridwarp
                         {
                             line[y - linestart] = new PointF((float)(si.Interpolate(y / yspacing) * xspacing + 1), y);
                         }
-                        e.Graphics.DrawLines(Pens.Black, line);
+                        e.Graphics.DrawLines(gridPen, line);
                     }
                 }
 
@@ -168,6 +168,8 @@ namespace pyrochild.effects.gridwarp
         {
             InitializeComponent();
 
+            gridPen = new Pen(Color.Black);
+
             this.gridWidth.ComboBox.SuspendLayout();
             this.gridHeight.ComboBox.SuspendLayout();
             this.zoom.ComboBox.SuspendLayout();
@@ -198,7 +200,7 @@ namespace pyrochild.effects.gridwarp
             this.gridHeight.ComboBox.ResumeLayout(false);
             this.zoom.ComboBox.ResumeLayout(false);
             this.zoom.Text = percent100;
-            
+
             InitializeUIImages();
             InitializeTooltips();
         }
@@ -209,6 +211,7 @@ namespace pyrochild.effects.gridwarp
 
             load.Image = new Bitmap(t, "images.open.png");
             save.Image = new Bitmap(t, "images.save.png");
+            colors.Image = new Bitmap(t, "images.colorwheel.png");
             gridSizeIncrement.Image = new Bitmap(t, "images.gridlarge.png");
             gridSizeDecrement.Image = new Bitmap(t, "images.gridsmall.png");
             undo.Image = new Bitmap(t, "images.undo.png");
@@ -222,6 +225,7 @@ namespace pyrochild.effects.gridwarp
         {
             tooltip.SetToolTip(save, "Save grid");
             tooltip.SetToolTip(load, "Load grid");
+            tooltip.SetToolTip(colors, "Change interface colors");
             undo.ToolTipText = "Undo";
             redo.ToolTipText = "Redo";
             gridSizeIncrement.ToolTipText = "Increase grid size";
@@ -235,14 +239,14 @@ namespace pyrochild.effects.gridwarp
         {
             grid.Invalidated += grid_Invalidated;
         }
-        
+
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
             if (!surface.IsDisposed)
             {
                 mesh.Render(surface, EffectSourceSurface, e.InvalidRect);
             }
-            
+
             canvas.InvalidateCanvas(e.InvalidRect);
         }
 
@@ -383,7 +387,7 @@ namespace pyrochild.effects.gridwarp
         {
             canvas.PerformMouseWheel(e);
         }
-        
+
         public int GridWidth
         {
             get
@@ -494,6 +498,59 @@ namespace pyrochild.effects.gridwarp
             {
                 FileStream fs = new FileStream(sfd.FileName, FileMode.Create);
                 grid.Save(fs);
+            }
+        }
+
+        private Pen gridPen;
+
+        public ColorBgra GridColor
+        {
+            get => gridPen.Color;
+            set
+            {
+                gridPen.Color = value;
+                canvas.Invalidate();
+            }
+        }
+
+        private void colors_Click(object sender, EventArgs e)
+        {
+            ColorBgra oldFrameColor = canvas.BackColor;
+            ColorBgra oldBackgroundColor = canvas.CanvasBackColor;
+            ColorBgra oldGridLineColor = GridColor;
+
+            var cd = new GridWarpColorsDialog()
+            {
+                FrameColor = oldFrameColor,
+                BackgroundColor = oldBackgroundColor,
+                GridColor = oldGridLineColor
+            };
+
+            cd.ColorChanged += (s, a) =>
+            {
+                canvas.BackColor = cd.FrameColor;
+                canvas.CanvasBackColor = cd.BackgroundColor;
+                
+                if (cd.BackgroundSurface != null)
+                {
+                    if (canvas.CanvasBackgroundImage == null)
+                    {
+                        canvas.CanvasBackgroundImage = new Bitmap(cd.BackgroundSurface.CreateAliasedBitmap());
+                    }
+                }
+                else
+                {
+                    canvas.CanvasBackgroundImage?.Dispose();
+                    canvas.CanvasBackgroundImage = null;
+                }
+                GridColor = cd.GridColor;
+            };
+
+            if (cd.ShowDialog(this) != DialogResult.OK)
+            {
+                canvas.BackColor = oldFrameColor;
+                canvas.CanvasBackColor = oldBackgroundColor;
+                GridColor = oldGridLineColor;
             }
         }
 
