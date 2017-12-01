@@ -104,12 +104,6 @@
     <Compile Include="common\ColorControl.Designer.cs">
       <DependentUpon>ColorControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="common\ColorDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="common\ColorDialog.Designer.cs">
-      <DependentUpon>ColorDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="common\ColorGradientControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -144,9 +138,6 @@
   <ItemGroup>
     <EmbeddedResource Include="common\ColorControl.resx">
       <DependentUpon>ColorControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="common\ColorDialog.resx">
-      <DependentUpon>ColorDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="common\ColorWheel.resx">
       <DependentUpon>ColorWheel.cs</DependentUpon>

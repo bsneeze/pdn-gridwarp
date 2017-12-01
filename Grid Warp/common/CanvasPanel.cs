@@ -250,9 +250,6 @@ namespace pyrochild.effects.common
 
         private void canvas_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
-                ShowContextMenu(canvas, e.Location, false);
-
             OnCanvasMouseDown(e.Button, e.X, e.Y);
         }
 
@@ -279,98 +276,7 @@ namespace pyrochild.effects.common
 
         private void CanvasPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
-                ShowContextMenu(this, e.Location, true);
-
             OnCanvasMouseDown(e.Button, e.X - canvas.Location.X, e.Y - canvas.Location.Y);
-        }
-
-        private void ShowContextMenu(Control sender, Point location, bool colorsOnly)
-        {
-            contextMenu.Items.Clear();
-            using (Surface sfc = new Surface(16, 16))
-            {
-                contextMenu.Items.Add(new ToolStripLabel("Background"));
-                contextMenu.Items.Add(new ToolStripSeparator());
-
-                sfc.ClearWithCheckerboardPattern();
-                if (!colorsOnly)
-                    contextMenu.Items.Add("Transparent", new Bitmap(sfc.CreateAliasedBitmap()), (s, e) =>
-                    {
-                        sender.BackgroundImage = null;
-                        sender.BackColor = Color.Transparent;
-                    });
-
-                sfc.Clear(ColorBgra.Black);
-                contextMenu.Items.Add("Black", new Bitmap(sfc.CreateAliasedBitmap()), (s, e) =>
-                {
-                    sender.BackgroundImage = null;
-                    sender.BackColor = Color.Black;
-                });
-
-                sfc.Clear(ColorBgra.White);
-                contextMenu.Items.Add("White", new Bitmap(sfc.CreateAliasedBitmap()), (s, e) =>
-                {
-                    sender.BackgroundImage = null;
-                    sender.BackColor = Color.White;
-                });
-
-                sfc.Clear(ColorBgra.FromBgr(127, 127, 127));
-                contextMenu.Items.Add("Gray", new Bitmap(sfc.CreateAliasedBitmap()), (s, e) =>
-                {
-                    sender.BackgroundImage = null;
-                    sender.BackColor = Color.Gray;
-                });
-
-                contextMenu.Items.Add("Other color...", new Bitmap(typeof(GridWarp),"images.colorwheel.png"), (s, e) =>
-                {
-                    ColorBgra c;
-                    if (DialogResult.OK == ShowColorPicker(sender, location, !colorsOnly, out c))
-                    {
-                        sender.BackColor = c.ToColor();
-                        sender.BackgroundImage = null;
-                    }
-                });
-
-                if (!colorsOnly)
-                {
-                    contextMenu.Items.Add("From clipboard", null, (s, e) =>
-                    {
-                        try
-                        {
-                            sender.BackgroundImage = Clipboard.GetImage();
-                            sender.BackColor = Color.Transparent;
-                        }
-                        catch { }
-                    });
-                    if (Clipboard.ContainsImage())
-                    {
-                        using (Surface fromcb = Surface.CopyFromBitmap((Bitmap)Clipboard.GetImage()))
-                        {
-                            sfc.FitSurface(ResamplingAlgorithm.SuperSampling, fromcb);
-                            contextMenu.Items[7].Image = new Bitmap(sfc.CreateAliasedBitmap());
-                        }
-                    }
-                    else
-                    {
-                        contextMenu.Items[7].Enabled = false;
-                    }
-                }
-            }
-            contextMenu.Show(sender, location);
-        }
-
-        private DialogResult ShowColorPicker(Control owner, Point location, bool alpha, out ColorBgra color)
-        {
-            using (ColorDialog cd = new ColorDialog())
-            {
-                cd.HasAlpha = alpha;
-                cd.Color = ColorBgra.FromColor(owner.BackColor);
-
-                DialogResult result = cd.ShowDialog(owner);
-                color = cd.Color;
-                return result;
-            }
         }
 
         private void CanvasPanel_MouseMove(object sender, MouseEventArgs e)
