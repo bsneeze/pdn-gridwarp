@@ -230,6 +230,11 @@
             this.aupdown.Size = new System.Drawing.Size(56, 20);
             this.aupdown.TabIndex = 7;
             this.aupdown.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.aupdown.Value = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
             // 
             // aslider
             // 
@@ -242,7 +247,7 @@
             this.aslider.Size = new System.Drawing.Size(73, 19);
             this.aslider.TabIndex = 38;
             this.aslider.TabStop = false;
-            this.aslider.Value = 0F;
+            this.aslider.Value = 1F;
             // 
             // gslider
             // 
