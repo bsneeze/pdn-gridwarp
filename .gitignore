@@ -2,3 +2,5 @@ Grid Warp/bin
 Grid Warp/obj
 *.suo
 *.user
+*.lock
+.vs/
