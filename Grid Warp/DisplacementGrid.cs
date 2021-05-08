@@ -25,17 +25,27 @@ namespace pyrochild.effects.gridwarp
         float dely;
         private DisplacementVector[,] points;
         private DisplacementMesh mesh;
+        private bool useLinearInterpolation = false;
 
-        public DisplacementGrid(Size size, DisplacementMesh mesh)
-            : this(size.Width, size.Height, mesh)
+        public DisplacementGrid(Size size, DisplacementMesh mesh, bool useLinearInterpolation = false)
+            : this(size.Width, size.Height, mesh, useLinearInterpolation)
         { }
 
         public int Width { get { return width; } }
         public int Height { get { return height; } }
+        public bool UseLinearInterpolation 
+        { 
+            get { return useLinearInterpolation; } 
+            set { 
+                useLinearInterpolation = value; 
+                this.UpdateMesh(); 
+            } 
+        }
 
-        public DisplacementGrid(int width, int height, DisplacementMesh mesh)
+        public DisplacementGrid(int width, int height, DisplacementMesh mesh, bool useLinearInterpolation = false)
         {
             this.mesh = mesh;
+            this.useLinearInterpolation = useLinearInterpolation;
             SetSize(width, height);
         }
 
@@ -268,8 +278,17 @@ namespace pyrochild.effects.gridwarp
 
         unsafe private void UpdatePointHorizontal(int px, int istart, int ystart, int yend)
         {
-            CosineInterpolator left = new CosineInterpolator();
-            CosineInterpolator right = new CosineInterpolator();
+            IInterpolator left;
+            if (useLinearInterpolation)
+                left = new LinearInterpolator();
+            else
+                left = new CosineInterpolator();
+
+            IInterpolator right;
+            if (useLinearInterpolation)
+                right = new LinearInterpolator();
+            else
+                right = new CosineInterpolator();
 
             for (int j = 0; j < handlesy; ++j)
             {
@@ -281,7 +300,11 @@ namespace pyrochild.effects.gridwarp
             {
                 if (i >= -1 && i < width)
                 {
-                    right = new CosineInterpolator();
+                    if (useLinearInterpolation)
+                        right = new LinearInterpolator();
+                    else
+                        right = new CosineInterpolator();
+
                     for (int j = 0; j < handlesy; ++j)
                     {
                         right.Add((j + points[i + 1, j].Y) * yspacing, points[i + 1, j].X * xspacing);
@@ -326,8 +349,17 @@ namespace pyrochild.effects.gridwarp
         {
             int stride = mesh.Stride / sizeof(DisplacementVector);
 
-            CosineInterpolator top = new CosineInterpolator();
-            CosineInterpolator bot = new CosineInterpolator();
+            IInterpolator top;
+            if (useLinearInterpolation)
+                top = new LinearInterpolator();
+            else
+                top = new CosineInterpolator();
+
+            IInterpolator bot;
+            if (useLinearInterpolation)
+                bot = new LinearInterpolator();
+            else
+                bot = new CosineInterpolator();
 
             for (int i = 0; i < handlesx; ++i)
             {
@@ -339,7 +371,11 @@ namespace pyrochild.effects.gridwarp
             {
                 if (j >= -1 && j < height)
                 {
-                    bot = new CosineInterpolator();
+                    if (useLinearInterpolation)
+                        bot = new LinearInterpolator();
+                    else
+                        bot = new CosineInterpolator();
+
                     for (int i = 0; i < handlesx; ++i)
                     {
                         bot.Add((i + points[i, j + 1].X) * xspacing, points[i, j + 1].Y * yspacing);
@@ -443,7 +479,7 @@ namespace pyrochild.effects.gridwarp
 
         public DisplacementGrid Clone()
         {
-            DisplacementGrid n = new DisplacementGrid(width, height, mesh);
+            DisplacementGrid n = new DisplacementGrid(width, height, mesh, useLinearInterpolation);
             n.points = (DisplacementVector[,])points.Clone();
             return n;
         }

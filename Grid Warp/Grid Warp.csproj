@@ -15,7 +15,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <SccProjectName>
     </SccProjectName>
     <SccLocalPath>
@@ -78,6 +78,15 @@
     <Reference Include="PaintDotNet.Effects">
       <HintPath>C:\Program Files\Paint.NET\PaintDotNet.Effects.dll</HintPath>
     </Reference>
+    <Reference Include="PaintDotNet.Framework">
+      <HintPath>C:\Program Files\paint.net\PaintDotNet.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Resources">
+      <HintPath>C:\Program Files\paint.net\PaintDotNet.Resources.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.SystemLayer">
+      <HintPath>C:\Program Files\paint.net\PaintDotNet.SystemLayer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -121,6 +130,8 @@
     <Compile Include="common\SliderControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="IInterpolator.cs" />
+    <Compile Include="LinearInterpolator.cs" />
     <Compile Include="DisplacementMesh.cs" />
     <Compile Include="DisplacementGrid.cs" />
     <Compile Include="DisplacementVector.cs" />
@@ -192,6 +203,9 @@
     <EmbeddedResource Include="images\icon.png" />
     <EmbeddedResource Include="images\gridlarge.png" />
     <EmbeddedResource Include="images\eye.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="images\linear.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

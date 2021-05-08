@@ -9,7 +9,7 @@ namespace pyrochild.effects.gridwarp
     {
         DisplacementMesh mesh;
 
-        public GridWarp() : base(StaticName, StaticIcon, StaticSubMenu, EffectFlags.Configurable) { }
+        public GridWarp() : base(StaticName, StaticIcon, StaticSubMenu, new EffectOptions() { Flags = EffectFlags.Configurable }) { }
 
         internal static string RawName
         {

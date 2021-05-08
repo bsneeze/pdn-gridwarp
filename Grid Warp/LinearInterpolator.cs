@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace pyrochild.effects.gridwarp
 {
-    public sealed class CosineInterpolator : IInterpolator
+    public sealed class LinearInterpolator : IInterpolator
     {
         private SortedList<float, float> points = new SortedList<float, float>();
 
@@ -30,7 +30,7 @@ namespace pyrochild.effects.gridwarp
                 if (xa[i + 1] > x)
                 {
                     float xfactor = (x - xa[i]) / (xa[i + 1] - xa[i]);
-                    float yfactor = (float)(1 - Math.Cos(xfactor * Math.PI)) / 2;
+                    float yfactor = xfactor;// (float)(1 - Math.Cos(xfactor * Math.PI)) / 2;
                     return yfactor * ya[i + 1] + (1 - yfactor) * ya[i];
                 }
             }
