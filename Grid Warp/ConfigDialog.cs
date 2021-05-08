@@ -44,8 +44,8 @@ namespace pyrochild.effects.gridwarp
             {
                 int i = tracking.X;
                 int j = tracking.Y;
-                float xspacing = (EffectSourceSurface.Width - 1) / (float)(grid.Width);
-                float yspacing = (EffectSourceSurface.Height - 1) / (float)(grid.Height);
+                float xspacing = (EnvironmentParameters.SourceSurface.Width - 1) / (float)(grid.Width);
+                float yspacing = (EnvironmentParameters.SourceSurface.Height - 1) / (float)(grid.Height);
 
                 float x = mouselocation.X;
                 float y = mouselocation.Y;
@@ -72,16 +72,21 @@ namespace pyrochild.effects.gridwarp
         {
             if (grid != null && gridvisible)
             {
-                float xspacing = canvas.ZoomFactor * (EffectSourceSurface.Width - 1) / (float)grid.Width;
-                float yspacing = canvas.ZoomFactor * (EffectSourceSurface.Height - 1) / (float)grid.Height;
+                float xspacing = canvas.ZoomFactor * (EnvironmentParameters.SourceSurface.Width - 1) / (float)grid.Width;
+                float yspacing = canvas.ZoomFactor * (EnvironmentParameters.SourceSurface.Height - 1) / (float)grid.Height;
                 float handleradius = 3;
 
                 e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
 
+                IInterpolator si = null;
+
                 //draw horizontal guidelines
                 for (int j = 0; j <= grid.Height; ++j)
                 {
-                    CosineInterpolator si = new CosineInterpolator();
+                    if (linearInterpolationBtn.Checked)
+                        si = new LinearInterpolator();
+                    else
+                        si = new CosineInterpolator();
 
                     for (int i = 0; i <= grid.Width; ++i)
                     {
@@ -111,7 +116,10 @@ namespace pyrochild.effects.gridwarp
                 //vertical guidelines
                 for (int i = 0; i <= grid.Width; ++i)
                 {
-                    CosineInterpolator si = new CosineInterpolator();
+                    if (linearInterpolationBtn.Checked)
+                        si = new LinearInterpolator();
+                    else
+                        si = new CosineInterpolator();
 
                     for (int j = 0; j <= grid.Height; ++j)
                     {
@@ -219,6 +227,7 @@ namespace pyrochild.effects.gridwarp
             zoomIn.Image = new Bitmap(t, "images.zoomin.png");
             zoomOut.Image = new Bitmap(t, "images.zoomout.png");
             visibility.Image = new Bitmap(t, "images.eye.png");
+            linearInterpolationBtn.Image = new Bitmap(t, "images.linear.png");
         }
 
         private void InitializeTooltips()
@@ -244,7 +253,7 @@ namespace pyrochild.effects.gridwarp
         {
             if (!surface.IsDisposed)
             {
-                mesh.Render(surface, EffectSourceSurface, e.InvalidRect);
+                mesh.Render(surface, EnvironmentParameters.SourceSurface, e.InvalidRect);
             }
 
             canvas.InvalidateCanvas(e.InvalidRect);
@@ -315,12 +324,12 @@ namespace pyrochild.effects.gridwarp
                     grid.SetSize(GridWidth, GridHeight);
 
                     if (mesh != null) mesh.Clear();
-                    if (surface != null) surface.CopySurface(EffectSourceSurface);
+                    if (surface != null) surface.CopySurface(EnvironmentParameters.SourceSurface);
                 }
             }
             else if (mesh != null)
             {
-                grid = new DisplacementGrid(GridWidth, GridHeight, mesh);
+                grid = new DisplacementGrid(GridWidth, GridHeight, mesh, linearInterpolationBtn.Checked);
                 InitializeRenderer();
             }
 
@@ -340,11 +349,11 @@ namespace pyrochild.effects.gridwarp
             this.Size = new Size(Owner.ClientSize.Width, Owner.ClientSize.Height - 30);
             this.WindowState = Owner.WindowState;
 
-            surface = new Surface(EffectSourceSurface.Size);
+            surface = new Surface(EnvironmentParameters.SourceSurface.Size);
             mesh = new DisplacementMesh(surface.Size);
             canvas.Surface = surface;
-            canvas.Selection = Selection;
-            mesh.Render(surface, EffectSourceSurface, EffectSourceSurface.Bounds);
+            canvas.Selection = EnvironmentParameters.GetSelectionAsPdnRegion();
+            mesh.Render(surface, EnvironmentParameters.SourceSurface, EnvironmentParameters.SourceSurface.Bounds);
         }
 
         private void gridSizeDecrement_Click(object sender, EventArgs e)
@@ -601,6 +610,16 @@ namespace pyrochild.effects.gridwarp
         {
             gridvisible ^= true;
             canvas.InvalidateCanvas();
+        }
+
+        private void linearInterpolationBtn_Click(object sender, EventArgs e)
+        {
+            linearInterpolationBtn.Checked = !linearInterpolationBtn.Checked;
+        }
+
+        private void linearInterpolationBtn_CheckedChanged(object sender, EventArgs e)
+        {
+            grid.UseLinearInterpolation = linearInterpolationBtn.Checked;
         }
     }
 }

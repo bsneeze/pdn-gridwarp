@@ -42,8 +42,8 @@ namespace pyrochild.effects.gridwarp
             this.toolPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.load = new System.Windows.Forms.Button();
             this.save = new System.Windows.Forms.Button();
-            this.colors = new Button();
             this.visibility = new System.Windows.Forms.Button();
+            this.colors = new System.Windows.Forms.Button();
             this.settingStrip = new System.Windows.Forms.ToolStrip();
             this.gridSizeSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
@@ -59,6 +59,8 @@ namespace pyrochild.effects.gridwarp
             this.zoomOut = new System.Windows.Forms.ToolStripButton();
             this.zoom = new System.Windows.Forms.ToolStripComboBox();
             this.zoomIn = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.linearInterpolationBtn = new System.Windows.Forms.ToolStripButton();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ok = new System.Windows.Forms.Button();
             this.cancel = new System.Windows.Forms.Button();
@@ -111,10 +113,10 @@ namespace pyrochild.effects.gridwarp
             this.visibility.TabIndex = 6;
             this.visibility.UseVisualStyleBackColor = true;
             this.visibility.Click += new System.EventHandler(this.visbility_Click);
-            //
+            // 
             // colors
-            //
-            this.colors.Location = new System.Drawing.Point(2, 94);
+            // 
+            this.colors.Location = new System.Drawing.Point(2, 96);
             this.colors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 0);
             this.colors.Name = "colors";
             this.colors.Size = new System.Drawing.Size(26, 26);
@@ -139,7 +141,9 @@ namespace pyrochild.effects.gridwarp
             this.toolStripSeparator2,
             this.zoomOut,
             this.zoom,
-            this.zoomIn});
+            this.zoomIn,
+            this.toolStripSeparator1,
+            this.linearInterpolationBtn});
             this.settingStrip.Location = new System.Drawing.Point(0, 0);
             this.settingStrip.Name = "settingStrip";
             this.settingStrip.Size = new System.Drawing.Size(624, 25);
@@ -176,7 +180,7 @@ namespace pyrochild.effects.gridwarp
             // gridSizeLabel
             // 
             this.gridSizeLabel.Name = "gridSizeLabel";
-            this.gridSizeLabel.Size = new System.Drawing.Size(12, 22);
+            this.gridSizeLabel.Size = new System.Drawing.Size(13, 22);
             this.gridSizeLabel.Text = "x";
             // 
             // gridHeight
@@ -250,6 +254,23 @@ namespace pyrochild.effects.gridwarp
             this.zoomIn.Size = new System.Drawing.Size(23, 22);
             this.zoomIn.Click += new System.EventHandler(this.zoomIn_Click);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // linearInterpolationBtn
+            // 
+            this.linearInterpolationBtn.Checked = true;
+            this.linearInterpolationBtn.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.linearInterpolationBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.linearInterpolationBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.linearInterpolationBtn.Name = "linearInterpolationBtn";
+            this.linearInterpolationBtn.Size = new System.Drawing.Size(23, 22);
+            this.linearInterpolationBtn.Text = "Use Linear Interpolation";
+            this.linearInterpolationBtn.CheckedChanged += new System.EventHandler(this.linearInterpolationBtn_CheckedChanged);
+            this.linearInterpolationBtn.Click += new System.EventHandler(this.linearInterpolationBtn_Click);
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.ok);
@@ -307,6 +328,7 @@ namespace pyrochild.effects.gridwarp
             this.canvas.BrushSize = 0;
             this.canvas.BrushVisible = false;
             this.canvas.CanvasBackColor = System.Drawing.Color.Transparent;
+            this.canvas.CanvasBackgroundImage = null;
             this.canvas.Location = new System.Drawing.Point(30, 25);
             this.canvas.MouseHoldInterval = 100;
             this.canvas.Name = "canvas";
@@ -379,5 +401,7 @@ namespace pyrochild.effects.gridwarp
         private ToolStripLabel toolStripLabel1;
         private ToolStripComboBox gridHeight;
         private Button visibility;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripButton linearInterpolationBtn;
     }
 }
