@@ -39,8 +39,20 @@ namespace pyrochild.effects.common
             {
                 if (color != value)
                 {
-                    color = value;
-                    hsvcolor = PaintDotNet.Imaging.ColorHsv96Float.FromRgb(new PaintDotNet.Imaging.ColorRgb96Float(color.R, color.G, color.B));
+                    var oldValue = color;
+                    var oldValueHsv = hsvcolor;
+
+                    try
+                    {
+                        color = value;
+                        hsvcolor = value.ToHsv();
+                    }
+                    catch
+                    {
+                        color = oldValue;
+                        hsvcolor = oldValueHsv;
+					}
+
                     OnColorChanged();
                     Invalidate();
                 }

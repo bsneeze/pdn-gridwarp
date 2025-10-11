@@ -47,9 +47,11 @@ namespace pyrochild.effects.common
                 try
                 {
                     ColorBgra c = ColorBgra.FromOpaqueInt32(int.Parse(hex.Text, System.Globalization.NumberStyles.HexNumber));
-                    PaintDotNet.Imaging.ColorHsv96Float h = PaintDotNet.Imaging.ColorHsv96Float.FromRgb(new PaintDotNet.Imaging.ColorRgb96Float(c.R, c.G, c.B));
+
                     wheel.Color = c;
                     SetRgbSliders(c);
+
+                    PaintDotNet.Imaging.ColorHsv96Float h = c.ToHsv();
                     SetHsvSliders(h);
                 }
                 catch

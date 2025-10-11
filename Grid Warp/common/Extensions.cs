@@ -1,4 +1,5 @@
 ﻿using PaintDotNet;
+using PaintDotNet.Imaging;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -166,5 +167,16 @@ namespace pyrochild.effects.common
             // to be between 0 and 255.
             return ColorBgra.FromBgr((byte)(b * 255), (byte)(g * 255), (byte)(r * 255));
         }
+
+        public static ColorHsv96Float ToHsv(this ColorBgra color)
+        {
+			float r = Math.Clamp(((float)color.R / 255f), 0, 1f);
+			float g = Math.Clamp(((float)color.G / 255f), 0, 1f);
+			float b = Math.Clamp(((float)color.B / 255f), 0, 1f);
+
+			ColorHsv96Float hsvcolor = PaintDotNet.Imaging.ColorHsv96Float.FromRgb(new PaintDotNet.Imaging.ColorRgb96Float(r, g, b));
+
+            return hsvcolor;
+		}
     }
 }
