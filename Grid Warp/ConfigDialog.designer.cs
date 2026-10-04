@@ -17,7 +17,7 @@ namespace pyrochild.effects.gridwarp
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
+        protected override void OnDispose(bool disposing)
         {
             if (disposing)
             {
@@ -26,8 +26,12 @@ namespace pyrochild.effects.gridwarp
                 //if (historystack != null)
                 //    historystack.Dispose();
                 gridPen?.Dispose();
+                surface?.Dispose();
+                source?.Dispose();
+                eyeOpenIcon?.Dispose();
+                eyeClosedIcon?.Dispose();
             }
-            base.Dispose(disposing);
+            base.OnDispose(disposing);
         }
 
         #region Windows Form Designer generated code
@@ -44,7 +48,7 @@ namespace pyrochild.effects.gridwarp
             this.save = new System.Windows.Forms.Button();
             this.colors = new Button();
             this.visibility = new System.Windows.Forms.Button();
-            this.settingStrip = new System.Windows.Forms.ToolStrip();
+            this.settingStrip = new DoubleBufferedToolStrip();
             this.gridSizeSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.gridSizeDecrement = new System.Windows.Forms.ToolStripButton();
@@ -239,7 +243,7 @@ namespace pyrochild.effects.gridwarp
             this.zoom.AutoSize = false;
             this.zoom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.zoom.Name = "zoom";
-            this.zoom.Size = new System.Drawing.Size(58, 23);
+            this.zoom.Size = new System.Drawing.Size(72, 23);
             this.zoom.SelectedIndexChanged += new System.EventHandler(this.zoom_SelectedIndexChanged);
             // 
             // zoomIn
@@ -324,11 +328,11 @@ namespace pyrochild.effects.gridwarp
             // ConfigDialog
             // 
             this.AcceptButton = this.ok;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.Control;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.CancelButton = this.cancel;
             this.ClientSize = new System.Drawing.Size(624, 442);
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.toolPanel);
             this.Controls.Add(this.settingStrip);
