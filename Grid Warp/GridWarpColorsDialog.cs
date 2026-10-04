@@ -5,14 +5,16 @@ using System.Windows.Forms;
 
 namespace pyrochild.effects.gridwarp
 {
-    public partial class GridWarpColorsDialog : Form
+    public partial class GridWarpColorsDialog : PaintDotNet.PdnBaseForm
     {
         private Surface clipboard;
 
         public GridWarpColorsDialog()
         {
             InitializeComponent();
+            this.Load += (themeSender, themeArgs) => pyrochild.effects.common.ThemeHelper.ApplyToChildForm(this);
 
+            pyrochild.effects.common.ThemeHelper.SetEnabled(fromClipboard, false);
             if (Clipboard.ContainsImage())
             {
                 try
@@ -22,7 +24,7 @@ namespace pyrochild.effects.gridwarp
                         clipboard = Surface.CopyFromBitmap((Bitmap)Clipboard.GetImage());
                         sfc.FitSurface(ResamplingAlgorithm.Fant, clipboard);
                         clipboardPreview.Image = new Bitmap(sfc.CreateAliasedBitmap());
-                        fromClipboard.Enabled = true;
+                        pyrochild.effects.common.ThemeHelper.SetEnabled(fromClipboard, true);
                     }
                 }
                 catch { }

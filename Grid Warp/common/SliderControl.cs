@@ -1,4 +1,4 @@
-using PaintDotNet;
+﻿using PaintDotNet;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -7,11 +7,35 @@ using System.Windows.Forms;
 namespace pyrochild.effects.common
 {
     public class SliderControl 
-        : Control
+        : Control, IDarkThemeable
     {
         private bool tracking = false;
         private bool hovering = false;
         private bool isValid;
+        private Color borderColor = Color.Black;
+        public Color BorderColor
+        {
+            get { return borderColor; }
+            set { borderColor = value; isValid = false; Invalidate(); }
+        }
+
+        private bool fillFixed;
+
+        void IDarkThemeable.ApplyDarkTheme(Color back, Color fore, Color field, Color border)
+        {
+            BackColor = field;
+            BorderColor = border;
+            if (!fillFixed)
+            {
+                fillFixed = true;
+
+                // A ToolStrip pushes its light text color onto a hosted slider's ForeColor (its fill).
+                ForeColor = ThemeHelper.Luma(ForeColor) > 190
+                    ? Color.FromArgb(70, 130, 220)
+                    : ThemeHelper.Blend(ForeColor, Color.White, 0.40f);
+            }
+            Invalidate();
+        }
         private string percentageFormat;
 
         private float slidervalue;
@@ -28,7 +52,7 @@ namespace pyrochild.effects.common
             {
                 if (slidervalue != value) 
                 {
-                    slidervalue = value.Clamp(slidermin, slidermax);
+                    slidervalue = Math.Clamp(value, slidermin, slidermax);
                     OnValueChanged();
                 }
             }
@@ -42,7 +66,7 @@ namespace pyrochild.effects.common
             }
             set
             {
-                slidermin = value.Clamp(0, 1);
+                slidermin = Math.Clamp(value, 0, 1);
             }
         }
 
@@ -54,7 +78,7 @@ namespace pyrochild.effects.common
             }
             set
             {
-                slidermax = value.Clamp(0, 1);
+                slidermax = Math.Clamp(value, 0, 1);
             }
         }
 
@@ -109,7 +133,10 @@ namespace pyrochild.effects.common
             }
 
             bufferGraphics.FillRectangle(new SolidBrush(this.ForeColor), 0.0f, 0.0f, ClientRectangle.Width * slidervalue, this.ClientRectangle.Height);
-            bufferGraphics.DrawRectangle(hovering ? Pens.White : Pens.Black, 0, 0, this.ClientSize.Width - 1, this.ClientSize.Height - 1);
+            using (Pen borderPen = new Pen(hovering ? Color.White : borderColor))
+            {
+                bufferGraphics.DrawRectangle(borderPen, 0, 0, this.ClientSize.Width - 1, this.ClientSize.Height - 1);
+            }
             bufferGraphics.SmoothingMode = SmoothingMode.HighQuality;
             bufferGraphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
 

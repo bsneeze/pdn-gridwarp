@@ -2,7 +2,7 @@ using PaintDotNet.Effects;
 
 namespace pyrochild.effects.gridwarp
 {
-    class ConfigToken : EffectConfigToken
+    public class ConfigToken : EffectConfigToken
     {
         public DisplacementGrid grid;
         public DisplacementMesh mesh;

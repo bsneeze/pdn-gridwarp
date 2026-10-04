@@ -96,11 +96,11 @@ namespace pyrochild.effects.gridwarp
             // 
             // fromClipboard
             // 
-            this.fromClipboard.AutoSize = true;
+            this.fromClipboard.AutoSize = false;
             this.fromClipboard.Enabled = false;
             this.fromClipboard.Location = new System.Drawing.Point(15, 173);
             this.fromClipboard.Name = "fromClipboard";
-            this.fromClipboard.Size = new System.Drawing.Size(95, 17);
+            this.fromClipboard.Size = new System.Drawing.Size(110, 20);
             this.fromClipboard.TabIndex = 1;
             this.fromClipboard.Text = "From clipboard";
             this.fromClipboard.UseVisualStyleBackColor = true;
@@ -150,11 +150,12 @@ namespace pyrochild.effects.gridwarp
             // GridWarpColorsDialog
             // 
             this.AcceptButton = this.ok;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.cancel;
             this.ClientSize = new System.Drawing.Size(308, 610);
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Controls.Add(this.clipboardPreview);
             this.Controls.Add(this.fromClipboard);
             this.Controls.Add(this.frameLabel);

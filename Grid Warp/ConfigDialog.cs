@@ -1,19 +1,23 @@
 ﻿using PaintDotNet;
 using PaintDotNet.Effects;
+using PaintDotNet.Imaging;
+using PaintDotNet.Rendering;
 using pyrochild.effects.common;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace pyrochild.effects.gridwarp
 {
-    public partial class ConfigDialog : EffectConfigDialog
+    public partial class ConfigDialog : EffectConfigForm<GridWarp, ConfigToken>
     {
         private const char undoShortcut = (char)26;
         private const char redoShortcut = (char)25;
         private Surface surface;
+        private Surface source;
         private const int minGridSize = 1;
         private const int maxGridSize = 100;
         private int[] gridSizes =
@@ -25,6 +29,8 @@ namespace pyrochild.effects.gridwarp
         private DisplacementGrid grid;
         private DisplacementMesh mesh;
         bool gridvisible = true;
+        private Bitmap eyeOpenIcon;
+        private Bitmap eyeClosedIcon;
 
         PointF mouselocation;
         Point tracking = new Point(-1, -1);
@@ -44,8 +50,8 @@ namespace pyrochild.effects.gridwarp
             {
                 int i = tracking.X;
                 int j = tracking.Y;
-                float xspacing = (EffectSourceSurface.Width - 1) / (float)(grid.Width);
-                float yspacing = (EffectSourceSurface.Height - 1) / (float)(grid.Height);
+                float xspacing = (source.Width - 1) / (float)(grid.Width);
+                float yspacing = (source.Height - 1) / (float)(grid.Height);
 
                 float x = mouselocation.X;
                 float y = mouselocation.Y;
@@ -72,9 +78,9 @@ namespace pyrochild.effects.gridwarp
         {
             if (grid != null && gridvisible)
             {
-                float xspacing = canvas.ZoomFactor * (EffectSourceSurface.Width - 1) / (float)grid.Width;
-                float yspacing = canvas.ZoomFactor * (EffectSourceSurface.Height - 1) / (float)grid.Height;
-                float handleradius = 3;
+                float xspacing = canvas.ZoomFactor * (source.Width - 1) / (float)grid.Width;
+                float yspacing = canvas.ZoomFactor * (source.Height - 1) / (float)grid.Height;
+                float handleradius = 4.5f * DpiScale;
 
                 e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
 
@@ -164,11 +170,62 @@ namespace pyrochild.effects.gridwarp
             }
         }
 
+        private float DpiScale
+        {
+            get { return this.DeviceDpi / 96f; }
+        }
+
+        private PdnRegion CreateSelectionRegion()
+        {
+            Rectangle[] scans = Environment.Selection.RenderScans
+                .Select(r => new Rectangle(r.X, r.Y, r.Width, r.Height))
+                .ToArray();
+
+            using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath(System.Drawing.Drawing2D.FillMode.Winding))
+            {
+                if (scans.Length > 0)
+                {
+                    path.AddRectangles(scans);
+                }
+                return new PdnRegion(path);
+            }
+        }
+
+        private bool darkIconsApplied;
+
+        private void ApplyTheme()
+        {
+            ThemeHelper.Apply(this);
+
+            if (ThemeHelper.IsDarkMode && !darkIconsApplied)
+            {
+                darkIconsApplied = true;
+                foreach (ToolStripButton button in new ToolStripButton[] { gridSizeIncrement, gridSizeDecrement })
+                {
+                    if (button.Image != null)
+                    {
+                        button.Image = ThemeHelper.Inverted(button.Image);
+                    }
+                }
+            }
+        }
+
         public ConfigDialog()
         {
             InitializeComponent();
+            this.Load += (themeSender, themeArgs) => ApplyTheme();
+            this.Shown += (themeSender, themeArgs) => ApplyTheme();
 
             gridPen = new Pen(Color.Black);
+
+            float dpiScale = DpiScale;
+            if (dpiScale > 1.01f)
+            {
+                // settingStrip's own button icons aren't scaled here: ToolStrip does that itself.
+                gridWidth.Size = new Size((int)Math.Round(gridWidth.Width * dpiScale), gridWidth.Height);
+                gridHeight.Size = new Size((int)Math.Round(gridHeight.Width * dpiScale), gridHeight.Height);
+                zoom.Size = new Size((int)Math.Round(zoom.Width * dpiScale), zoom.Height);
+            }
 
             this.gridWidth.ComboBox.SuspendLayout();
             this.gridHeight.ComboBox.SuspendLayout();
@@ -208,17 +265,74 @@ namespace pyrochild.effects.gridwarp
         private void InitializeUIImages()
         {
             Type t = typeof(GridWarp);
+            float dpiScale = DpiScale;
 
-            load.Image = new Bitmap(t, "images.open.png");
-            save.Image = new Bitmap(t, "images.save.png");
-            colors.Image = new Bitmap(t, "images.colorwheel.png");
+            // Plain Buttons don't scale their icons.
+            load.Image = LoadIcon(t, "images.open.png", dpiScale);
+            save.Image = LoadIcon(t, "images.save.png", dpiScale);
+            colors.Image = LoadIcon(t, "images.colorwheel.png", dpiScale);
+
+            eyeOpenIcon = LoadIcon(t, "images.eye.png", dpiScale);
+            eyeClosedIcon = MakeClosedEyeIcon(eyeOpenIcon);
+            UpdateVisibilityIcon();
+
+            // ToolStrip scales these itself, so pass the unscaled bitmap.
             gridSizeIncrement.Image = new Bitmap(t, "images.gridlarge.png");
             gridSizeDecrement.Image = new Bitmap(t, "images.gridsmall.png");
             undo.Image = new Bitmap(t, "images.undo.png");
             redo.Image = new Bitmap(t, "images.redo.png");
             zoomIn.Image = new Bitmap(t, "images.zoomin.png");
             zoomOut.Image = new Bitmap(t, "images.zoomout.png");
-            visibility.Image = new Bitmap(t, "images.eye.png");
+        }
+
+        private static Bitmap LoadIcon(Type resourceType, string resourceName, float dpiScale)
+        {
+            Bitmap original = new Bitmap(resourceType, resourceName);
+
+            if (dpiScale <= 1.01f)
+            {
+                return original;
+            }
+
+            int width = Math.Max(1, (int)Math.Round(original.Width * dpiScale));
+            int height = Math.Max(1, (int)Math.Round(original.Height * dpiScale));
+
+            Bitmap scaled = new Bitmap(width, height);
+            using (Graphics g = Graphics.FromImage(scaled))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                g.DrawImage(original, 0, 0, width, height);
+            }
+            original.Dispose();
+
+            return scaled;
+        }
+
+        private static Bitmap MakeClosedEyeIcon(Bitmap eyeOpen)
+        {
+            Bitmap closed = new Bitmap(eyeOpen.Width, eyeOpen.Height);
+            using (Graphics g = Graphics.FromImage(closed))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.DrawImage(eyeOpen, 0, 0, eyeOpen.Width, eyeOpen.Height);
+
+                float inset = Math.Max(1f, eyeOpen.Width * 0.12f);
+                using (Pen slashOutline = new Pen(Color.White, eyeOpen.Width * 0.32f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                using (Pen slash = new Pen(Color.Black, eyeOpen.Width * 0.16f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                {
+                    PointF from = new PointF(inset, eyeOpen.Height - inset);
+                    PointF to = new PointF(eyeOpen.Width - inset, inset);
+                    g.DrawLine(slashOutline, from, to);
+                    g.DrawLine(slash, from, to);
+                }
+            }
+            return closed;
+        }
+
+        private void UpdateVisibilityIcon()
+        {
+            visibility.Image = gridvisible ? eyeOpenIcon : eyeClosedIcon;
         }
 
         private void InitializeTooltips()
@@ -240,11 +354,27 @@ namespace pyrochild.effects.gridwarp
             grid.Invalidated += grid_Invalidated;
         }
 
+        private unsafe Surface GetSourceAsClassicSurface()
+        {
+            SizeInt32 docSize = Environment.Document.Size;
+            Surface result = new Surface(docSize.Width, docSize.Height);
+
+            using (IEffectInputBitmap<ColorBgra32> srcBitmap = Environment.GetSourceBitmapBgra32())
+            using (IBitmapLock<ColorBgra32> srcLock = srcBitmap.Lock(new RectInt32(0, 0, docSize.Width, docSize.Height)))
+            {
+                RegionPtr<ColorBgra32> srcRegion32 = new RegionPtr<ColorBgra32>(srcLock.Buffer, srcLock.Size, srcLock.BufferStride);
+                RegionPtr<ColorBgra> dstRegion = new RegionPtr<ColorBgra>(result.GetPointPointer(0, 0), result.Width, result.Height, result.Stride);
+                srcRegion32.Cast<ColorBgra>().CopyTo(dstRegion);
+            }
+
+            return result;
+        }
+
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
             if (!surface.IsDisposed)
             {
-                mesh.Render(surface, EffectSourceSurface, e.InvalidRect);
+                mesh.Render(surface, source, e.InvalidRect);
             }
 
             canvas.InvalidateCanvas(e.InvalidRect);
@@ -276,7 +406,7 @@ namespace pyrochild.effects.gridwarp
                 }
                 else
                 {
-                    this.gridWidth.BackColor = SystemColors.Window;
+                    this.gridWidth.BackColor = ThemeHelper.FieldBackColor;
                     OnGridChanged();
                 }
             }
@@ -299,7 +429,7 @@ namespace pyrochild.effects.gridwarp
                 }
                 else
                 {
-                    this.gridHeight.BackColor = SystemColors.Window;
+                    this.gridHeight.BackColor = ThemeHelper.FieldBackColor;
                     OnGridChanged();
                 }
             }
@@ -315,7 +445,7 @@ namespace pyrochild.effects.gridwarp
                     grid.SetSize(GridWidth, GridHeight);
 
                     if (mesh != null) mesh.Clear();
-                    if (surface != null) surface.CopySurface(EffectSourceSurface);
+                    if (surface != null) surface.CopySurface(source);
                 }
             }
             else if (mesh != null)
@@ -329,22 +459,33 @@ namespace pyrochild.effects.gridwarp
 
         private void donate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "http://forums.getpaint.net/index.php?showtopic=7291");
+            ((PaintDotNet.AppModel.IShellService)Services.GetService(typeof(PaintDotNet.AppModel.IShellService))).LaunchUrl(this, "http://forums.getpaint.net/index.php?showtopic=7291");
         }
 
         private void ConfigDialog_Load(object sender, EventArgs e)
         {
-            this.BackColor = SystemColors.Control;
             this.Text = GridWarp.StaticDialogName;
+
+            // Add a gap above the toolbar. Its DPI-scaled height isn't known until Load.
+            int topMargin = (int)Math.Round(6 * DpiScale);
+            settingStrip.Location = new Point(settingStrip.Location.X, settingStrip.Location.Y + topMargin);
+
+            int newCanvasTop = settingStrip.Bottom;
+            int topDelta = newCanvasTop - canvas.Top;
+            canvas.Bounds = new Rectangle(canvas.Left, newCanvasTop, canvas.Width, canvas.Height - topDelta);
+
             this.DesktopLocation = Owner.PointToScreen(new Point(0, 30));
             this.Size = new Size(Owner.ClientSize.Width, Owner.ClientSize.Height - 30);
             this.WindowState = Owner.WindowState;
 
-            surface = new Surface(EffectSourceSurface.Size);
+            source = GetSourceAsClassicSurface();
+            surface = new Surface(source.Size);
             mesh = new DisplacementMesh(surface.Size);
             canvas.Surface = surface;
-            canvas.Selection = Selection;
-            mesh.Render(surface, EffectSourceSurface, EffectSourceSurface.Bounds);
+
+            canvas.Selection = CreateSelectionRegion();
+
+            mesh.Render(surface, source, source.Bounds);
         }
 
         private void gridSizeDecrement_Click(object sender, EventArgs e)
@@ -371,16 +512,16 @@ namespace pyrochild.effects.gridwarp
 
         public void AddToGridSize(int delta)
         {
-            int newWidth = Int32Util.Clamp(GridWidth + delta, minGridSize, maxGridSize);
+            int newWidth = Math.Clamp(GridWidth + delta, minGridSize, maxGridSize);
             GridWidth = newWidth;
 
-            int newHeight = Int32Util.Clamp(GridHeight + delta, minGridSize, maxGridSize);
+            int newHeight = Math.Clamp(GridHeight + delta, minGridSize, maxGridSize);
             GridHeight = newHeight;
         }
 
-        protected override void InitialInitToken()
+        protected override EffectConfigToken OnCreateInitialToken()
         {
-            theEffectToken = new ConfigToken();
+            return new ConfigToken();
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
@@ -444,16 +585,14 @@ namespace pyrochild.effects.gridwarp
                 canvas.ZoomFactor = CanvasPanel.ZoomFactors[zoom.SelectedIndex];
         }
 
-        protected override void InitDialogFromToken(EffectConfigToken effectTokenCopy)
+        protected override void OnUpdateDialogFromToken(ConfigToken token)
         {
-            ConfigToken token = effectTokenCopy as ConfigToken;
             GridWidth = token.width;
             GridHeight = token.height;
         }
 
-        protected override void InitTokenFromDialog()
+        protected override void OnUpdateTokenFromDialog(ConfigToken token)
         {
-            ConfigToken token = EffectToken as ConfigToken;
             token.width = GridWidth;
             token.height = GridHeight;
             token.grid = grid;
@@ -462,7 +601,7 @@ namespace pyrochild.effects.gridwarp
 
         private void ok_Click(object sender, EventArgs e)
         {
-            FinishTokenUpdate();
+            UpdateTokenFromDialog();
         }
 
         const string dialogFilter = "Warp Grid (*.WARPGRID)|*.warpgrid";
@@ -600,6 +739,7 @@ namespace pyrochild.effects.gridwarp
         private void visbility_Click(object sender, EventArgs e)
         {
             gridvisible ^= true;
+            UpdateVisibilityIcon();
             canvas.InvalidateCanvas();
         }
     }
